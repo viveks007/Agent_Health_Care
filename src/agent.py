@@ -36,10 +36,10 @@ def run_patient_review(patient):
         "analysis": analysis
     }
 
-
+#Hight risk
 from src.tools import get_high_risk_patients
 
-def run_high_risk_agent():
+def run_high_risk_agent(df):
 
     high_risk_patients = get_high_risk_patients(df)
 
@@ -56,15 +56,18 @@ def run_high_risk_agent():
 #Missed Appointment Agent
 from src.tools import get_missed_appointments
 
-def run_missed_appointment_agent():
-    missed_appointments = get_missed_appointments(df)
+def run_missed_appointment_agent(df):
+
+    missed_patients = get_missed_appointments(df)
 
     results = []
 
-    for _, patient in missed_appointments.iterrows():
-        result = run_patient_review(patient.to_dict())
+    for _, patient in missed_patients.iterrows():
+
+        result = run_patient_review(
+            patient.to_dict()
+        )
 
         results.append(result)
 
     return results
-
