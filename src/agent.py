@@ -2,26 +2,51 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from groq import Groq
 
 from src.prompts import PATIENT_ANALYSIS_PROMPT
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GENAI_API_KEY")
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
+# Agent Logic
 def analyze_patient(patient_data):
 
     prompt = PATIENT_ANALYSIS_PROMPT.format(
         patient_data=patient_data
     )
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
 
-    return response.text
+    for attempt in range(3):
+
+        try:
+
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a healthcare care-coordination agent."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.2
+            )
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+
+            print(f"Retry {attempt + 1}: {e}")
+
+            time.sleep(5)
+
+    return "Analysis unavailable"
 
 # Create Agent Orchestrator
 def run_patient_review(patient):
